@@ -13,7 +13,9 @@ services:
       - key: TYPE
         value: "PAPER" # or VANILLA, SPIGOT, FORGE, etc.
       - key: MEMORY
-        value: "2G" # Adjust based on your plan
+        value: "512M" # Adjust based on your plan (512M for Starter, 2G for Standard, 6G for Pro)
+      - key: MAX_PLAYERS
+        value: "10" # Adjust based on memory (5-10 for Starter, 10-20 for Standard)
       - key: MAX_PLAYERS
         value: "20"
       - key: DIFFICULTY

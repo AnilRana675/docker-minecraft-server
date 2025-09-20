@@ -33,12 +33,17 @@ This repository contains everything you need to deploy a Minecraft server on [Re
    EULA=TRUE
    TYPE=PAPER
    VERSION=LATEST
-   MEMORY=2G
-   MAX_PLAYERS=20
+   MEMORY=512M
+   MAX_PLAYERS=10
    DIFFICULTY=easy
    MOTD=My Render Minecraft Server
    ENABLE_AUTOPAUSE=TRUE
    ```
+   
+   > 📝 **Memory Settings by Plan**:
+   > - **Starter (512MB)**: `MEMORY=512M`, `MAX_PLAYERS=5-10`
+   > - **Standard (2GB)**: `MEMORY=2G`, `MAX_PLAYERS=10-20`
+   > - **Pro (8GB)**: `MEMORY=6G`, `MAX_PLAYERS=20+`
    
    > ⚠️ **IMPORTANT**: `EULA=TRUE` is **REQUIRED** or the server will not start!
 
@@ -74,10 +79,10 @@ TYPE=PAPER                   # VANILLA, PAPER, SPIGOT, FORGE, FABRIC
 VERSION=LATEST               # LATEST, 1.20.4, 1.19.4, etc.
 
 # Performance
-MEMORY=2G                    # RAM allocation
-MAX_PLAYERS=20               # Maximum players
-VIEW_DISTANCE=8              # Render distance
-SIMULATION_DISTANCE=6        # Simulation distance
+MEMORY=512M                  # RAM allocation (512M, 1G, 2G, 4G, 6G, 8G)
+MAX_PLAYERS=10               # Maximum players (adjust based on memory)
+VIEW_DISTANCE=6              # Render distance (lower = better performance)
+SIMULATION_DISTANCE=4        # Simulation distance (lower = better performance)
 
 # Auto-pause (Cost Saving)
 ENABLE_AUTOPAUSE=TRUE        # Enable auto-pause

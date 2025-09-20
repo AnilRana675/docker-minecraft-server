@@ -11,7 +11,7 @@ services:
       - key: VERSION
         value: "LATEST" # or specific version like "1.20.4"
       - key: TYPE
-        value: "VANILLA" # or PAPER, SPIGOT, FORGE, etc.
+        value: "PAPER" # or VANILLA, SPIGOT, FORGE, etc.
       - key: MEMORY
         value: "2G" # Adjust based on your plan
       - key: MAX_PLAYERS

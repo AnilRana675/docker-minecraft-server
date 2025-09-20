@@ -28,7 +28,7 @@ This repository contains everything you need to deploy a Minecraft server on [Re
    - **Dockerfile Path**: `./Dockerfile.render`
    - **Plan**: Choose based on your needs (see pricing below)
 
-4. **Set Environment Variables**:
+4. **Set Environment Variables** (⚠️ **CRITICAL** - Must be set before deployment):
    ```
    EULA=TRUE
    TYPE=PAPER
@@ -39,6 +39,8 @@ This repository contains everything you need to deploy a Minecraft server on [Re
    MOTD=My Render Minecraft Server
    ENABLE_AUTOPAUSE=TRUE
    ```
+   
+   > ⚠️ **IMPORTANT**: `EULA=TRUE` is **REQUIRED** or the server will not start!
 
 5. **Deploy**: Click "Create Web Service"
 
@@ -163,7 +165,28 @@ Features:
 
 ### Common Issues
 
-1. **Server won't start**
+1. **🚨 EULA Error - Server won't start with "Please accept the Minecraft EULA"**
+   ```
+   [ERROR] Please accept the Minecraft EULA at
+   [ERROR]   https://account.mojang.com/documents/minecraft_eula
+   [ERROR] by adding the following immediately after 'docker run':
+   [ERROR]   -e EULA=TRUE
+   ```
+   
+   **Solution**:
+   - Go to your Render service dashboard
+   - Click on "Environment" tab
+   - Add environment variable: `EULA` = `TRUE`
+   - Click "Save Changes" and redeploy
+   
+   **Alternative**: Add to `render.yaml`:
+   ```yaml
+   envVars:
+     - key: EULA
+       value: "TRUE"
+   ```
+
+2. **Server won't start (other reasons)**
    - Ensure `EULA=TRUE` is set
    - Check memory allocation matches your plan
    - Verify Dockerfile path is correct

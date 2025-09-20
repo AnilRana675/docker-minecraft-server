@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        .online { background: #4CAF50; }
+        .offline { background: #f44336; }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 4px solid #4CAF50;
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .command-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .command-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+
+        .output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            min-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .players-list {
+            background: white;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: #f1f3f4;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .refresh-btn {
+            background: #2196F3;
+            margin-left: 10px;
+        }
+
+        .refresh-btn:hover {
+            background: #1976D2;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Minecraft Server Dashboard</h1>
+            <p>Server Status: <span id="server-status">Checking...</span><span id="status-indicator" class="status-indicator offline"></span></p>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h3>📊 Server Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="player-count">-</div>
+                        <div class="stat-label">Players Online</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="server-tps">-</div>
+                        <div class="stat-label">Server TPS</div>
+                    </div>
+                </div>
+                <button class="btn refresh-btn" onclick="refreshStats()">🔄 Refresh</button>
+            </div>
+
+            <div class="card">
+                <h3>👥 Online Players</h3>
+                <div id="players-list" class="players-list">
+                    <p>Loading players...</p>
+                </div>
+            </div>
+
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3>💻 Server Console</h3>
+                <div class="command-form">
+                    <input type="text" id="command-input" class="command-input" placeholder="Enter server command (e.g., list, say Hello)" />
+                    <button class="btn" onclick="sendCommand()">Send Command</button>
+                </div>
+                <div id="console-output" class="output">Console output will appear here...\n</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lastUpdate = null;
+
+        async function refreshStats() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                if (data.online) {
+                    document.getElementById('server-status').textContent = 'Online';
+                    document.getElementById('status-indicator').className = 'status-indicator online';
+                    
+                    // Parse player count
+                    const playerMatch = data.players.match(/There are (\d+) of a max of (\d+) players online/);
+                    if (playerMatch) {
+                        document.getElementById('player-count').textContent = `${playerMatch[1]}/${playerMatch[2]}`;
+                    }
+                    
+                    // Parse TPS
+                    const tpsMatch = data.tps.match(/TPS from last 1m, 5m, 15m: ([\d.]+)/);
+                    if (tpsMatch) {
+                        document.getElementById('server-tps').textContent = parseFloat(tpsMatch[1]).toFixed(1);
+                    }
+                } else {
+                    document.getElementById('server-status').textContent = 'Offline';
+                    document.getElementById('status-indicator').className = 'status-indicator offline';
+                }
+
+                lastUpdate = new Date();
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                document.getElementById('server-status').textContent = 'Error';
+                document.getElementById('status-indicator').className = 'status-indicator offline';
+            }
+        }
+
+        async function refreshPlayers() {
+            try {
+                const response = await fetch('/api/players');
+                const data = await response.json();
+                
+                const playersList = document.getElementById('players-list');
+                
+                if (data.players.includes('There are 0')) {
+                    playersList.innerHTML = '<p style="text-align: center; color: #666;">No players online</p>';
+                } else {
+                    // Parse player names (simplified parsing)
+                    const lines = data.players.split('\n');
+                    let playersHtml = '';
+                    
+                    lines.forEach(line => {
+                        if (line.includes('online:')) {
+                            const players = line.split('online: ')[1];
+                            if (players) {
+                                const playerList = players.split(', ');
+                                playerList.forEach(player => {
+                                    if (player.trim()) {
+                                        playersHtml += `<div class="player-item">${player.trim()}</div>`;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    
+                    playersList.innerHTML = playersHtml || '<p style="text-align: center; color: #666;">No players found</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching players:', error);
+                document.getElementById('players-list').innerHTML = '<p style="color: red;">Error loading players</p>';
+            }
+        }
+
+        async function sendCommand() {
+            const input = document.getElementById('command-input');
+            const command = input.value.trim();
+            
+            if (!command) return;
+            
+            const output = document.getElementById('console-output');
+            output.textContent += `> ${command}\n`;
+            
+            try {
+                const response = await fetch('/api/command', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ command }),
+                });
+                
+                const data = await response.json();
+                
+                if (data.response) {
+                    output.textContent += `${data.response}\n`;
+                } else if (data.error) {
+                    output.textContent += `Error: ${data.error}\n`;
+                }
+            } catch (error) {
+                output.textContent += `Network Error: ${error.message}\n`;
+            }
+            
+            input.value = '';
+            output.scrollTop = output.scrollHeight;
+            
+            // Refresh stats after command
+            setTimeout(() => {
+                refreshStats();
+                refreshPlayers();
+            }, 1000);
+        }
+
+        // Event listeners
+        document.getElementById('command-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendCommand();
+            }
+        });
+
+        // Initial load and auto-refresh
+        refreshStats();
+        refreshPlayers();
+
+        setInterval(() => {
+            refreshStats();
+            refreshPlayers();
+        }, 30000); // Refresh every 30 seconds
+    </script>
+</body>
+</html>

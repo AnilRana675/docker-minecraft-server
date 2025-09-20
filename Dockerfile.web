@@ -1,0 +1,15 @@
+# Web interface for Minecraft server management on Render
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies
+RUN npm init -y && \
+    npm install express rcon-client cors
+
+# Copy web interface files
+COPY web-interface/ ./
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]

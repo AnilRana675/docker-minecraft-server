@@ -1,0 +1,59 @@
+# Docker Compose file optimized for Render
+services:
+  minecraft-server:
+    image: itzg/minecraft-server:latest
+    container_name: minecraft-server
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    ports:
+      - "25565:25565"  # Minecraft port
+      - "25575:25575"  # RCON port
+    environment:
+      # Essential settings
+      EULA: "TRUE"
+      VERSION: "LATEST"
+      TYPE: "PAPER"  # Paper is recommended for better performance
+      MEMORY: "2G"
+      
+      # Server properties
+      MAX_PLAYERS: "20"
+      DIFFICULTY: "easy"
+      GAMEMODE: "survival"
+      MOTD: "A Minecraft Server on Render"
+      
+      # Performance optimizations for cloud hosting
+      VIEW_DISTANCE: "8"
+      SIMULATION_DISTANCE: "6"
+      
+      # Auto-pause to save resources (important for cloud hosting)
+      ENABLE_AUTOPAUSE: "TRUE"
+      AUTOPAUSE_TIMEOUT_EST: "3600"
+      AUTOPAUSE_TIMEOUT_INIT: "600"
+      AUTOPAUSE_KNOCK_INTERFACE: "eth0"
+      
+      # RCON for server management
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: "changeme123"
+      
+      # JVM optimizations for cloud environments
+      USE_AIKAR_FLAGS: "true"
+      JVM_XX_OPTS: "-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions"
+      
+      # Optional: Auto-download optimized configurations
+      PAPER_DOWNLOAD_URL: "https://api.papermc.io/v2/projects/paper/versions/1.20.4/builds/442/downloads/paper-1.20.4-442.jar"
+      
+    volumes:
+      - minecraft_data:/data
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  minecraft_data:
+    driver: local

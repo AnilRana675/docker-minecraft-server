@@ -1,0 +1,18 @@
+# Dockerfile optimized for Render deployment
+FROM itzg/minecraft-server:latest
+
+# Set working directory
+WORKDIR /data
+
+# Expose Minecraft port
+EXPOSE 25565
+
+# Expose RCON port for management
+EXPOSE 25575
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD mc-health
+
+# Use the default entrypoint from the base image
+# The base image already handles all the setup

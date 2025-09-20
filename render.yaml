@@ -1,0 +1,79 @@
+services:
+  - type: web
+    name: minecraft-server
+    env: docker
+    dockerfilePath: ./Dockerfile.render
+    plan: starter # Change to standard or pro for better performance
+    region: oregon # Choose region closest to your players
+    envVars:
+      - key: EULA
+        value: "TRUE"
+      - key: VERSION
+        value: "LATEST" # or specific version like "1.20.4"
+      - key: TYPE
+        value: "VANILLA" # or PAPER, SPIGOT, FORGE, etc.
+      - key: MEMORY
+        value: "2G" # Adjust based on your plan
+      - key: MAX_PLAYERS
+        value: "20"
+      - key: DIFFICULTY
+        value: "easy"
+      - key: ALLOW_NETHER
+        value: "true"
+      - key: ANNOUNCE_PLAYER_ACHIEVEMENTS
+        value: "true"
+      - key: ENABLE_COMMAND_BLOCK
+        value: "false"
+      - key: FORCE_GAMEMODE
+        value: "false"
+      - key: GENERATE_STRUCTURES
+        value: "true"
+      - key: HARDCORE
+        value: "false"
+      - key: MAX_BUILD_HEIGHT
+        value: "256"
+      - key: MAX_WORLD_SIZE
+        value: "29999984"
+      - key: PVP
+        value: "true"
+      - key: SPAWN_ANIMALS
+        value: "true"
+      - key: SPAWN_MONSTERS
+        value: "true"
+      - key: SPAWN_NPCS
+        value: "true"
+      - key: VIEW_DISTANCE
+        value: "10"
+      - key: SEED
+        value: "" # Set a specific world seed if desired
+      - key: MODE
+        value: "survival"
+      - key: MOTD
+        value: "A Minecraft Server on Render"
+      - key: AUTOPAUSE_TIMEOUT_EST
+        value: "3600" # Auto-pause after 1 hour of no players
+      - key: AUTOPAUSE_TIMEOUT_INIT
+        value: "600" # Initial timeout
+      - key: AUTOPAUSE_KNOCK_INTERFACE
+        value: "eth0"
+    # Render uses ephemeral storage, so consider using external storage for persistence
+    disk:
+      name: minecraft-data
+      mountPath: /data
+      sizeGB: 10 # Adjust size as needed
+
+  # Optional: Add a web dashboard service
+  - type: web
+    name: minecraft-web
+    env: docker
+    dockerfilePath: ./Dockerfile.web
+    plan: starter
+    envVars:
+      - key: RCON_HOST
+        value: minecraft-server
+      - key: RCON_PORT
+        value: "25575"
+      - key: RCON_PASSWORD
+        fromService:
+          name: minecraft-server
+          envVarKey: RCON_PASSWORD
